@@ -1,65 +1,58 @@
 package org.example;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.Scanner;
-
 public class Main {
-    private static void printLine() {
-        System.out.println("-".repeat(40));
-    }
-
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String continueInput;
         CuratorJournal journal = new CuratorJournal();
+        ConsoleRegexInput input = new ConsoleRegexInput();
 
-        do {
-            System.out.println("\tВведи дані студента");
+        System.out.println("Журнал куратора\n");
 
-            String lastName = ConsoleRegexInput.getInput(scanner, "Прізвище студента", "^[А-Яа-яЇїІіЄєҐґA-Za-z\\-]+$", "Прізвище повинно містити лише літери та дефіс.");
-            String firstName = ConsoleRegexInput.getInput(scanner, "Ім'я студента", "^[А-Яа-яЇїІіЄєҐґA-Za-z\\-]+$", "Ім'я повинно містити лише літери та дефіс.");
-            String birthDate = getValidatedDate(scanner, "Дата народження (дд/мм/рррр)");
-            String phoneNumber = ConsoleRegexInput.getInput(scanner, "Телефон (формат +380XXXXXXXXX)", "^\\+380\\d{9}$", "Номер телефону має починатися з +380 та містити 9 цифр.");
-            String address = ConsoleRegexInput.getInput(scanner, "Адреса (вулиця будинок квартира)", "^.+\\s+\\d+\\s+\\d+$", "Адреса має містити вулицю, номер будинку та квартиру.");
-
-            JournalEntry record = new JournalEntry(lastName, firstName, birthDate, phoneNumber, address);
-            journal.addJournalEntry(record);
-
-            System.out.println("Запис успішно додано у журнал.");
-
-            List<JournalEntry> records = journal.getAllEntries();
-            System.out.println("\nУсі записи журналу:");
-            for (JournalEntry entry : records) {
-                System.out.println(entry);
-            }
-
-            System.out.print("\nБажаєш додати новий запис? (т/н): ");
-            continueInput = scanner.nextLine().trim().toLowerCase();
-
-            printLine();
-        } while (continueInput.equals("т") || continueInput.equals("так") || continueInput.equals("y") || continueInput.equals("yes"));
-
-        scanner.close();
-
-        if (!continueInput.equals("н") && !continueInput.equals("ні") && !continueInput.equals("no")) {
-            System.out.println("Програма завершить роботу (некоректна відповідь).");
-        }
-    }
-
-    private static String getValidatedDate(Scanner scanner, String prompt) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         while (true) {
-            System.out.print(prompt + ": ");
-            String input = scanner.nextLine().trim();
-            try {
-                LocalDate.parse(input, formatter);
-                return input;
-            } catch (DateTimeParseException e) {
-                System.out.println("Помилка: дата повинна бути у форматі дд/мм/рррр.");
+            String lastName = input.readValidated(
+                    "Введи прізвище студента: ",
+                    "^[А-Яа-яЇїІіЄєҐґ'\\-]{2,}$",
+                    "Використовуй лише українські літери."
+            );
+
+            String firstName = input.readValidated(
+                    "Введи ім'я студента: ",
+                    "^[А-Яа-яЇїІіЄєҐґ'\\-]{2,}$",
+                    "Використовуй лише українські літери."
+            );
+
+            String birthDate = input.readValidated(
+                    "Введи дату народження (у форматі ДД.ММ.РРРР): ",
+                    "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.(19|20)\\d{2}$",
+                    "Неправильний формат дати. Приклад: 25.12.2000"
+            );
+
+            String phoneNumber = input.readValidated(
+                    "Введи телефон (у форматі +380XXXXXXXXX): ",
+                    "^\\+380\\d{9}$",
+                    "Номер телефону повинен бути у форматі +380XXXXXXXXX."
+            );
+
+            String address = input.readValidated(
+                    "Введи адресу (вулиця, будинок, квартира): ",
+                    "^[А-Яа-яЇїІіЄєҐґ0-9\\s,.-]{5,}$",
+                    "Адреса повинна містити лише українські літери, цифри та символи ,.-"
+            );
+
+            JournalEntry entry = new JournalEntry(lastName, firstName, birthDate, phoneNumber, address);
+            journal.addEntry(entry);
+
+            String continueChoice = input.readValidated(
+                    "Бажаєш додати ще один запис? (так/ні): ",
+                    "^(так|ні)$",
+                    "Введи лише 'так' або 'ні'."
+            );
+
+            if (continueChoice.equalsIgnoreCase("ні")) {
+                break;
             }
         }
+
+        journal.showAllEntries();
+        System.out.println("Роботу завершено.");
     }
 }

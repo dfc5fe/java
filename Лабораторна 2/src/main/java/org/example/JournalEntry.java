@@ -1,7 +1,5 @@
 package org.example;
 
-import java.util.Objects;
-
 public class JournalEntry {
     private final String lastName;
     private final String firstName;
@@ -19,25 +17,9 @@ public class JournalEntry {
 
     @Override
     public String toString() {
-        return "Студент: " + lastName + " " + firstName +
-                ", Дата народження: " + birthDate +
-                ", Телефон: " + phoneNumber +
-                ", Адреса: " + address;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof JournalEntry that)) return false;
-        return Objects.equals(lastName, that.lastName) &&
-                Objects.equals(firstName, that.firstName) &&
-                Objects.equals(birthDate, that.birthDate) &&
-                Objects.equals(phoneNumber, that.phoneNumber) &&
-                Objects.equals(address, that.address);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(lastName, firstName, birthDate, phoneNumber, address);
+        return String.format(
+                "Прізвище: %s%nІм'я: %s%nДата народження: %s%nТелефон: %s%nАдреса: %s%n",
+                lastName, firstName, birthDate, phoneNumber, address
+        );
     }
 }
